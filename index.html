@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>An Interactive History of Memory Protection</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn-tailwindcss.vercel.app/"></script>
     <!-- Chosen Palette: Warm Neutrals -->
     <!-- Application Structure Plan: The application is structured as an interactive timeline dashboard. The primary navigation is a horizontal timeline that visually represents the chronological progression of memory protection technologies. Users can click on any point on the timeline to dynamically load detailed content into a dedicated display area below. Filter buttons ('All', 'Hardware', 'Software') allow users to customize the timeline view. This structure was chosen over a linear presentation to empower users to explore, compare, and understand the historical context of each innovation in a non-linear, engaging manner, which is far more effective for learning and data synthesis than a static slide deck. -->
     <!-- Visualization & Content Choices: The core visualization is an interactive, horizontal timeline built with HTML and Tailwind CSS, as it's the most intuitive way to present historical data. Report Info: Each technology slide. Goal: Show chronological relationship and provide details on demand. Viz/Presentation Method: Clickable nodes on the timeline. Interaction: Clicking a node updates a detailed content panel. The panel separates technical details from the narrative/story for clarity. Justification: This transforms passive content into an active exploration tool, enhancing user understanding and engagement. No traditional charts are needed as the timeline itself is the primary data visualization. All interactions are powered by vanilla JavaScript. CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
@@ -41,7 +41,7 @@
         .timeline {
             display: flex;
             position: relative;
-            padding: 20px 0;
+            padding: 50px 0; /* Increased vertical padding for content */
         }
         .timeline::before {
             content: '';
@@ -57,6 +57,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center; /* This centers the dot on the line */
             position: relative;
             flex-shrink: 0;
             width: 150px;
@@ -80,24 +81,28 @@
         }
         .timeline-item[data-type="hardware"].active .timeline-dot { background-color: #3B82F6; /* Blue 500 */ }
         .timeline-item[data-type="software"].active .timeline-dot { background-color: #10B981; /* Emerald 500 */ }
+        .timeline-item[data-type="intro"].active .timeline-dot,
+        .timeline-item[data-type="none"].active .timeline-dot {
+            background-color: #6B7280; /* Gray 500 */
+        }
         
         .timeline-content {
             text-align: center;
             cursor: pointer;
             padding: 10px;
+            position: absolute; /* Position content absolutely to avoid overlap */
+            width: 100%;
+            left: 0;
         }
+        /* Position odd items' content BELOW the line */
         .timeline-item:nth-child(odd) .timeline-content {
-            margin-top: 30px;
+            top: 50%;
+            margin-top: 15px; /* Push it down from the center */
         }
+        /* Position even items' content ABOVE the line */
         .timeline-item:nth-child(even) .timeline-content {
-            margin-bottom: 30px;
-        }
-        .timeline-item:nth-child(odd) {
-             padding-top: 20px;
-        }
-        .timeline-item:nth-child(even) {
-            padding-bottom: 20px;
-            flex-direction: column-reverse;
+            bottom: 50%;
+            margin-bottom: 15px; /* Push it up from the center */
         }
         .card {
             background-color: #FFFFFF;
@@ -112,6 +117,11 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        .filter-btn.active {
+            background-color: #fff;
+            color: #3B82F6;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
         }
     </style>
      <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -284,11 +294,9 @@
             
             function setActiveFilterButton(activeBtn) {
                  [filterAll, filterHardware, filterSoftware].forEach(btn => {
-                    btn.classList.remove('active', 'bg-white', 'text-gray-800', 'shadow-sm');
-                    btn.classList.add('text-gray-600');
+                    btn.classList.remove('active');
                 });
-                activeBtn.classList.add('active', 'bg-white', 'text-gray-800', 'shadow-sm');
-                activeBtn.classList.remove('text-gray-600');
+                activeBtn.classList.add('active');
             }
 
             filterAll.addEventListener('click', () => {

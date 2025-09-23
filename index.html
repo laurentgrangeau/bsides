@@ -6,10 +6,13 @@
     <title>An Interactive History of Memory Protection</title>
     <script src="https://cdn-tailwindcss.vercel.app/"></script>
     <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: The application is structured as an interactive timeline dashboard. The primary navigation is a horizontal timeline that visually represents the chronological progression of memory protection technologies. Users can click on any point on the timeline to dynamically load detailed content into a dedicated display area below. Filter buttons ('All', 'Hardware', 'Software') allow users to customize the timeline view. This structure was chosen over a linear presentation to empower users to explore, compare, and understand the historical context of each innovation in a non-linear, engaging manner, which is far more effective for learning and data synthesis than a static slide deck. -->
+    <!-- Application Structure Plan: The application uses a sequential, section-based flow. The user starts with a full timeline, then can navigate to focused hardware and software sections. This structure was chosen to guide the user through the complex history in a logical, step-by-step manner, mirroring a structured presentation, rather than offering a purely exploratory filter-based interface. The user flow is linear (Next/Previous), supported by keyboard and clicker controls, making it ideal for a presentation setting. The pop-out speaker notes window supports a dual-screen presenter setup. -->
     <!-- Visualization & Content Choices: The core visualization is an interactive, horizontal timeline built with HTML and Tailwind CSS, as it's the most intuitive way to present historical data. Report Info: Each technology slide. Goal: Show chronological relationship and provide details on demand. Viz/Presentation Method: Clickable nodes on the timeline. Interaction: Clicking a node updates a detailed content panel. The panel separates technical details from the narrative/story for clarity. Justification: This transforms passive content into an active exploration tool, enhancing user understanding and engagement. No traditional charts are needed as the timeline itself is the primary data visualization. All interactions are powered by vanilla JavaScript. CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
+        html, body {
+            height: 100%;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #FDFBF8; /* Warm off-white */
@@ -20,23 +23,11 @@
             width: 100%;
             overflow-x: auto;
             padding: 20px 0;
-            scrollbar-width: thin;
-            scrollbar-color: #D1D5DB #FDFBF8;
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
         }
         /* Webkit scrollbar styling for Chrome, Safari, etc. */
         .timeline-container::-webkit-scrollbar {
-            height: 8px; /* height of the scrollbar */
-        }
-        .timeline-container::-webkit-scrollbar-track {
-            background: #FDFBF8; /* track color */
-        }
-        .timeline-container::-webkit-scrollbar-thumb {
-            background-color: #D1D5DB; /* thumb color */
-            border-radius: 10px;
-            border: 2px solid #FDFBF8; /* padding around thumb */
-        }
-        .timeline-container::-webkit-scrollbar-thumb:hover {
-            background-color: #9CA3AF; /* thumb color on hover */
+            display: none; /* Hide scrollbar for Webkit browsers */
         }
         .timeline {
             display: flex;
@@ -130,31 +121,33 @@
 </head>
 <body class="antialiased">
 
-    <div class="container mx-auto p-4 md:p-8">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800">A Journey Through Memory Protection</h1>
-            <p class="mt-2 text-lg text-gray-600">An interactive timeline of hardware and software defenses.</p>
+    <div class="w-full min-h-screen p-4 md:p-6 lg:p-8 flex flex-col">
+        <header class="text-center mb-6 flex-shrink-0">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">A Journey Through Memory Protection</h1>
+            <p class="mt-2 text-md text-gray-600">An interactive timeline of hardware and software defenses.</p>
         </header>
 
-        <nav class="flex justify-center items-center space-x-2 mb-8 p-2 bg-gray-100 rounded-xl max-w-sm mx-auto">
-            <button id="filter-all" class="filter-btn active flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200">All</button>
-            <button id="filter-hardware" class="filter-btn flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200">Hardware</button>
-            <button id="filter-software" class="filter-btn flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200">Software</button>
-        </nav>
-
-        <section class="card p-4">
-            <h2 class="text-lg font-semibold mb-2 text-center text-gray-700">Timeline of Innovations</h2>
-             <div class="timeline-container">
-                <div id="timeline" class="timeline">
-                    <!-- Timeline items will be injected here by JavaScript -->
+        <main class="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow">
+            <aside class="lg:col-span-1">
+                <div class="card p-4 sticky top-8">
+                    <nav class="flex justify-center items-center space-x-2 mb-4 p-2 bg-gray-100 rounded-xl max-w-sm mx-auto">
+                        <button id="filter-all" class="filter-btn active flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200">All</button>
+                        <button id="filter-hardware" class="filter-btn flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200">Hardware</button>
+                        <button id="filter-software" class="filter-btn flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200">Software</button>
+                    </nav>
+                    <h2 class="text-lg font-semibold mb-2 text-center text-gray-700">Timeline of Innovations</h2>
+                     <div class="timeline-container">
+                        <div id="timeline" class="timeline">
+                            <!-- Timeline items will be injected here by JavaScript -->
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </aside>
 
-        <section id="details-panel" class="mt-8 fade-in">
-             <!-- Details will be injected here by JavaScript -->
-        </section>
-
+            <section id="details-panel" class="lg:col-span-3 fade-in">
+                 <!-- Details will be injected here by JavaScript -->
+            </section>
+        </main>
     </div>
 
     <script>
@@ -257,7 +250,7 @@
 
                 if (data.type === 'intro') {
                     detailsPanel.innerHTML = `
-                        <div class="card p-6 md:p-8">
+                        <div class="card p-6 md:p-8 h-full flex items-center justify-center">
                             <div class="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                                 <img src="${data.photoUrl}" alt="Speaker photo" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg">
                                 <div>
@@ -269,26 +262,25 @@
                 } else {
                     const typeColorClass = data.type === 'hardware' ? 'blue' : (data.type === 'software' ? 'emerald' : 'gray');
                     detailsPanel.innerHTML = `
-                        <div class="card p-6 md:p-8">
-                            <div class="flex flex-col md:flex-row justify-between md:items-center mb-6">
+                        <div class="card p-6 md:p-8 h-full flex flex-col">
+                            <div class="flex-shrink-0 flex flex-col md:flex-row justify-between md:items-center mb-6">
                                <h2 class="text-2xl md:text-3xl font-bold text-gray-800">${data.title}</h2>
                                <span class="text-sm font-semibold text-white bg-${typeColorClass}-500 px-3 py-1 rounded-full mt-2 md:mt-0 capitalize">${data.type !== 'none' ? data.type : 'Historical Context'}</span>
                             </div>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
+                            <div class="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div class="lg:col-span-2 overflow-y-auto">
                                     <h3 class="text-xl font-semibold border-b-2 border-gray-200 pb-2 mb-4 text-gray-700">Technical Overview</h3>
-                                    <dl class="space-y-4 text-sm">
+                                    <dl class="space-y-6 text-lg">
                                         <div><dt class="font-semibold text-gray-600">What it is:</dt><dd class="text-gray-800">${markdownToHtml(data.what)}</dd></div>
                                         <div><dt class="font-semibold text-gray-600">How it works:</dt><dd class="text-gray-800">${markdownToHtml(data.how)}</dd></div>
                                         <div><dt class="font-semibold text-gray-600">Protects against:</dt><dd class="text-gray-800">${markdownToHtml(data.protects)}</dd></div>
                                         <div><dt class="font-semibold text-gray-600">Pioneered by:</dt><dd class="text-gray-800">${markdownToHtml(data.pioneer)}</dd></div>
                                     </dl>
                                 </div>
-                                <div>
-                                    <h3 class="text-xl font-semibold border-b-2 border-gray-200 pb-2 mb-4 text-gray-700">Illustration</h3>
-                                    <div class="card p-2">
-                                        <img src="${data.imageUrl}" alt="Illustration for ${data.title}" class="rounded-lg w-full h-auto object-contain max-h-64" onerror="this.onerror=null;this.src='https://placehold.co/400x300/EFE8D9/4A4A4A?text=Image';">
+                                <div class="lg:col-span-1 flex items-center justify-center">
+                                    <div class="card w-full max-w-xs overflow-hidden">
+                                        <img src="${data.imageUrl}" alt="Illustration for ${data.title}" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/400x300/EFE8D9/4A4A4A?text=Image';">
                                     </div>
                                 </div>
                             </div>

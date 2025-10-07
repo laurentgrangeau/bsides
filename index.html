@@ -125,9 +125,10 @@
 <body class="antialiased">
 
     <div class="w-full min-h-screen p-4 md:p-6 lg:p-8 flex flex-col">
-        <header class="text-center mb-6 flex-shrink-0">
+        <header class="text-center mb-6 flex-shrink-0 relative">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-800">A Journey Through Memory Protection</h1>
             <p class="mt-2 text-md text-gray-600">An interactive timeline of hardware and software defenses.</p>
+            <button id="wake-lock-btn" class="absolute top-0 right-0 mt-2 mr-2 py-1 px-3 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 text-sm font-semibold transition-colors" title="Prevent screen from sleeping">Keep Awake</button>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow">
@@ -199,16 +200,19 @@
             const filterAll = document.getElementById('filter-all');
             const filterHardware = document.getElementById('filter-hardware');
             const filterSoftware = document.getElementById('filter-software');
+            const wakeLockBtn = document.getElementById('wake-lock-btn');
             
             let currentActiveId = null;
             let notesWindow = null;
+            let wakeLock = null;
 
             function markdownToHtml(text) {
                 if (!text) return '';
+                // The order is important: bold first, then italic
                 return text
-                    .replace(/`([^`]+)`/g, '<code class="bg-gray-100 text-indigo-700 py-0.5 px-1.5 rounded-md font-mono text-sm">$1</code>')
                     .replace(/\*\*([^\*]+)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
-                    .replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+                    .replace(/\*([^\*]+)\*/g, '<em>$1</em>')
+                    .replace(/`([^`]+)`/g, '<code class="bg-gray-100 text-indigo-700 py-0.5 px-1.5 rounded-md font-mono text-sm">$1</code>');
             }
 
             function renderTimeline(filter = 'all') {
@@ -418,6 +422,55 @@
                     nextItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 }
             }
+            
+            async function toggleWakeLock() {
+                if ('wakeLock' in navigator) {
+                    if (wakeLock) {
+                        await wakeLock.release();
+                        wakeLock = null;
+                    } else {
+                        try {
+                            wakeLock = await navigator.wakeLock.request('screen');
+                            wakeLock.addEventListener('release', () => {
+                                wakeLock = null;
+                                updateWakeLockButton();
+                            });
+                        } catch (err) {
+                            console.error(`${err.name}, ${err.message}`);
+                            wakeLock = null;
+                        }
+                    }
+                    updateWakeLockButton();
+                } else {
+                    alert('Screen Wake Lock API is not supported in your browser.');
+                }
+            }
+
+            function updateWakeLockButton() {
+                if (wakeLock) {
+                    wakeLockBtn.textContent = 'Awake 🟢';
+                    wakeLockBtn.classList.remove('bg-gray-200', 'text-gray-600', 'hover:bg-gray-300');
+                    wakeLockBtn.classList.add('bg-green-100', 'text-green-800');
+                } else {
+                    wakeLockBtn.textContent = 'Keep Awake';
+                    wakeLockBtn.classList.add('bg-gray-200', 'text-gray-600', 'hover:bg-gray-300');
+                    wakeLockBtn.classList.remove('bg-green-100', 'text-green-800');
+                }
+            }
+
+            wakeLockBtn.addEventListener('click', toggleWakeLock);
+
+            // Reacquire wake lock if page becomes visible again
+            document.addEventListener('visibilitychange', async () => {
+                if (wakeLock !== null && document.visibilityState === 'visible') {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                    } catch(e) {
+                         wakeLock = null;
+                    }
+                    updateWakeLockButton();
+                }
+            });
 
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'ArrowRight' || event.key === 'PageDown') {
